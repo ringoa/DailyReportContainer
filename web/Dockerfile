@@ -1,17 +1,17 @@
 # 0. ubuntu:22.04をベースにする
 FROM ubuntu:22.04
 
-# 3. ubuntuの日本語対応
+# 1. ubuntuの日本語対応
 RUN apt-get update && apt-get -y install language-pack-ja
 RUN update-locale LANG=ja_JP.utf8
 ENV LANG ja_JP.utf8
 
-# 4.日本時間(JST)の設定
+# 2.日本時間(JST)の設定
 RUN DEBIAN_FRONTEND=noninteractive apt -y install tzdata
 RUN  echo 'Asia/Tokyo' > /etc/timezone
 ENV TZ Asia/Tokyo
 
-# 5.Apache2のインストール
+# 3.Apache2のインストール
 RUN apt-get -y install apache2
 RUN a2enmod rewrite
 RUN a2enmod ssl
@@ -23,7 +23,7 @@ RUN echo '</VirtualHost>' >> /etc/apache2/sites-available/000-default.conf
 EXPOSE 80
 EXPOSE 443
 
-# 6. JDKとSpring Bootアプリケーションのインスト―ル
+# 4. JDKとSpring Bootアプリケーションのインスト―ル
 RUN apt -y install wget apt-transport-https gnupg
 RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add -
 RUN echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list
@@ -36,14 +36,14 @@ RUN a2enmod proxy_ajp
 RUN echo "ProxyPass / ajp://localhost:8009/" >> /etc/apache2/apache2.conf
 
 
-# 7. 一般ユーザmyuserの作成およびmyuserでログイン
+# 5. 一般ユーザmyuserの作成およびmyuserでログイン
 RUN apt -y install sudo
 RUN useradd -s /bin/bash -G sudo -m myuser
 RUN echo "myuser:mypass" | chpasswd
 RUN echo "root:rootpass" | chpasswd
 
 
-# 8. 起動時コマンドの指定
+# 6. 起動時コマンドの指定
 COPY startup.sh /startup.sh
 RUN chmod 744 /startup.sh
 CMD /startup.sh
